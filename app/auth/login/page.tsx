@@ -51,10 +51,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-linear-to-b from-orange-50/60 to-background px-4">
+      {/* Brand mark */}
+      <div className="mb-6 flex flex-col items-center gap-2">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-2xl shadow-lg shadow-primary/20">
+          🍴
+        </span>
+        <span className="text-xl font-bold tracking-tight">RecipeVault</span>
+      </div>
+
+      <Card className="w-full max-w-md shadow-xl shadow-black/5">
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
           <CardDescription>Sign in to your RecipeVault account</CardDescription>
         </CardHeader>
 
@@ -88,7 +96,7 @@ export default function LoginPage() {
 
             {serverError && <p className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">{serverError}</p>}
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full rounded-full" disabled={isSubmitting}>
               {isSubmitting ? "Signing in…" : "Sign in"}
             </Button>
           </form>
@@ -103,7 +111,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="button" variant="outline" className="w-full" onClick={signInWithGoogle}>
+          <Button type="button" variant="outline" className="w-full rounded-full" onClick={signInWithGoogle}>
             {/* Inline Google icon */}
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
               <path

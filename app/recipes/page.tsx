@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, ChefHat, Brain, X, Loader2 } from "lucide-react";
+import { Plus, Brain, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -120,19 +120,23 @@ export default function RecipesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <h1 className="text-2xl font-bold">My Recipes</h1>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">My Recipes</h1>
+          <p className="text-sm text-muted-foreground">Your personal cookbook</p>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
+            className="rounded-full"
             onClick={() => {
               resetSuggestModal();
               setSuggestOpen(true);
             }}
           >
             <Brain className="mr-2 h-4 w-4 text-violet-500" />
-            🧠 What can I make?
+            What can I make?
           </Button>
-          <Button asChild>
+          <Button className="rounded-full" asChild>
             <Link href="/recipes/new">
               <Plus className="mr-2 h-4 w-4" /> Add Recipe
             </Link>
@@ -162,17 +166,17 @@ export default function RecipesPage() {
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-72 animate-pulse rounded-lg bg-slate-100" />
+            <div key={i} className="h-72 animate-pulse rounded-2xl bg-muted" />
           ))}
         </div>
       ) : recipes.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed py-20 text-center">
-          <ChefHat className="h-12 w-12 text-slate-300" />
+        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed py-20 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-3xl">🍳</div>
           <div>
-            <p className="font-semibold text-slate-600">No recipes yet</p>
+            <p className="font-semibold">No recipes yet</p>
             <p className="text-sm text-muted-foreground">Start building your personal cookbook!</p>
           </div>
-          <Button asChild>
+          <Button className="rounded-full" asChild>
             <Link href="/recipes/new">
               <Plus className="mr-2 h-4 w-4" /> Create your first recipe
             </Link>

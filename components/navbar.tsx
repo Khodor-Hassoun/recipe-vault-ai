@@ -33,22 +33,26 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Brand */}
         <Link href={user ? "/recipes" : "/"} className="flex items-center gap-2 font-bold text-lg tracking-tight">
-          <span className="text-primary">🍴</span>
-          RecipeVault
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white text-base">
+            🍴
+          </span>
+          <span>RecipeVault</span>
         </Link>
 
         {/* Centre nav — only when logged in */}
         {user && (
-          <nav className="hidden gap-1 sm:flex">
+          <nav className="hidden gap-0 sm:flex">
             {NAV_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
-                  pathname.startsWith(href) ? "bg-accent text-accent-foreground" : "text-muted-foreground"
+                className={`relative px-4 py-1 text-sm font-medium transition-colors ${
+                  pathname.startsWith(href)
+                    ? "text-foreground after:absolute after:-bottom-5.5 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {label}
@@ -97,8 +101,8 @@ export function Navbar() {
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/auth/login">Sign in</Link>
               </Button>
-              <Button size="sm" asChild>
-                <Link href="/auth/signup">Sign up</Link>
+              <Button size="sm" className="rounded-full px-5" asChild>
+                <Link href="/auth/signup">Get started</Link>
               </Button>
             </>
           )}

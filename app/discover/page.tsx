@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Compass } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { RecipeCard } from "@/components/recipe-card";
@@ -50,8 +49,8 @@ export default function DiscoverPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Discover Recipes</h1>
-        <p className="text-muted-foreground">Browse public recipes shared by the community</p>
+        <h1 className="text-2xl font-bold tracking-tight">Discover Recipes</h1>
+        <p className="text-sm text-muted-foreground">Browse public recipes shared by the community</p>
       </div>
 
       {/* Search + filters */}
@@ -83,14 +82,14 @@ export default function DiscoverPage() {
       {loading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-72 animate-pulse rounded-lg bg-slate-100" />
+            <div key={i} className="h-72 animate-pulse rounded-2xl bg-muted" />
           ))}
         </div>
       ) : recipes.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed py-20 text-center">
-          <Compass className="h-12 w-12 text-slate-300" />
+        <div className="flex flex-col items-center gap-4 rounded-2xl border-2 border-dashed py-20 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted text-3xl">🥨</div>
           <div>
-            <p className="font-semibold text-slate-600">No recipes found</p>
+            <p className="font-semibold">No recipes found</p>
             <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
           </div>
         </div>

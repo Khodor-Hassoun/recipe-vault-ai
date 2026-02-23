@@ -44,9 +44,17 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 dark:bg-slate-950">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-linear-to-b from-orange-50/60 to-background px-4">
+      {/* Brand mark */}
+      <div className="mb-6 flex flex-col items-center gap-2">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-2xl shadow-lg shadow-primary/20">
+          🍴
+        </span>
+        <span className="text-xl font-bold tracking-tight">RecipeVault</span>
+      </div>
+
+      <Card className="w-full max-w-md shadow-xl shadow-black/5">
+        <CardHeader className="space-y-1 pb-4">
           <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
           <CardDescription>Start saving your recipes today</CardDescription>
         </CardHeader>
@@ -101,7 +109,7 @@ export default function SignupPage() {
                 <p className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">{serverError}</p>
               )}
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full rounded-full" disabled={isSubmitting}>
                 {isSubmitting ? "Creating account…" : "Create account"}
               </Button>
             </form>

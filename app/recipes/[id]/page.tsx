@@ -101,8 +101,9 @@ export default function RecipePage({ params }: RecipePageProps) {
 
       {/* Cover image */}
       {recipe.image_url && (
-        <div className="relative h-64 w-full overflow-hidden rounded-xl bg-slate-100">
+        <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-muted sm:h-80">
           <Image src={recipe.image_url} alt={recipe.title} fill className="object-cover" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/50 via-black/10 to-transparent" />
         </div>
       )}
 
@@ -117,29 +118,29 @@ export default function RecipePage({ params }: RecipePageProps) {
         {recipe.description && <p className="text-muted-foreground">{recipe.description}</p>}
 
         {/* Meta row */}
-        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+        <div className="flex flex-wrap gap-3">
           {recipe.cuisine_type && (
-            <span className="flex items-center gap-1">
-              <ChefHat className="h-4 w-4" />
+            <div className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-sm">
+              <ChefHat className="h-4 w-4 text-primary" />
               {recipe.cuisine_type}
-            </span>
+            </div>
           )}
           {totalTime > 0 && (
-            <span className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
+            <div className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-sm">
+              <Clock className="h-4 w-4 text-primary" />
               {totalTime} min
               {recipe.prep_time_mins && recipe.cook_time_mins && (
-                <span className="text-xs">
+                <span className="text-xs text-muted-foreground">
                   ({recipe.prep_time_mins} prep + {recipe.cook_time_mins} cook)
                 </span>
               )}
-            </span>
+            </div>
           )}
           {recipe.servings && (
-            <span className="flex items-center gap-1">
-              <Users className="h-4 w-4" />
+            <div className="flex items-center gap-1.5 rounded-full border bg-card px-3 py-1 text-sm">
+              <Users className="h-4 w-4 text-primary" />
               {recipe.servings} servings
-            </span>
+            </div>
           )}
         </div>
 
@@ -162,14 +163,14 @@ export default function RecipePage({ params }: RecipePageProps) {
         {recipe.ingredients.length === 0 ? (
           <p className="text-muted-foreground">No ingredients listed.</p>
         ) : (
-          <ul className="space-y-2">
+          <ul className="grid gap-2 sm:grid-cols-2">
             {recipe.ingredients.map((ing, i) => (
-              <li key={i} className="flex items-center gap-2 text-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
-                <span className="font-medium">
+              <li key={i} className="flex items-center gap-3 rounded-xl border bg-card px-4 py-2.5 text-sm">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                <span className="font-medium text-primary">
                   {ing.amount} {ing.unit}
                 </span>
-                <span>{ing.name}</span>
+                <span className="text-foreground">{ing.name}</span>
               </li>
             ))}
           </ul>
@@ -186,11 +187,11 @@ export default function RecipePage({ params }: RecipePageProps) {
         ) : (
           <ol className="space-y-4">
             {recipe.instructions.map((step, i) => (
-              <li key={i} className="flex gap-4">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+              <li key={i} className="flex gap-4 rounded-2xl border bg-card p-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm shadow-primary/30">
                   {step.step}
                 </span>
-                <p className="pt-0.5 text-sm leading-relaxed">{step.text}</p>
+                <p className="pt-1 text-sm leading-relaxed">{step.text}</p>
               </li>
             ))}
           </ol>
