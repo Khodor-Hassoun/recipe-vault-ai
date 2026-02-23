@@ -6,18 +6,24 @@
 import { type NextRequest } from "next/server";
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
-  // TODO: implement GET /api/recipes/[id]
+  const { id } = await params;
+  // TODO: implement GET /api/recipes/[id] using id
+  void id;
 }
 
 export async function PUT(request: NextRequest, { params }: RouteContext) {
+  const { id } = await params;
   // TODO: implement PUT /api/recipes/[id]
   // Validate body with zod schema from lib/validations.ts
+  void id;
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
+  const { id } = await params;
   // TODO: implement DELETE /api/recipes/[id]
+  void id;
 }

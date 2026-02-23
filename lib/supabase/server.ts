@@ -1,11 +1,26 @@
-// TODO: Implement Supabase server client
-// - Create and export a Supabase client for use in Server Components, Route Handlers, and Middleware
-// - Uses @supabase/ssr createServerClient with cookies() from next/headers
-// - Reads NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY from env
-
 import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-// TODO: export createClient function that reads/writes cookies
+/**
+ * Creates a Supabase client for use in Server Components and Route Handlers.
+ * Reads and writes cookies through next/headers so sessions stay in sync.
+ */
 export async function createClient() {
-  // TODO: return createServerClient(url, anonKey, { cookies: { ... } })
+  const cookieStore = await cookies();
+
+  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
+        } catch {
+          // Called from a Server Component — cookie writes are a no-op.
+          // Middleware will keep the session refreshed.
+        }
+      },
+    },
+  });
 }

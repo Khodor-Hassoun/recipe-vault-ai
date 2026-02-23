@@ -12,12 +12,12 @@
 // Uses react-hook-form + zod (recipeSchema from lib/validations.ts)
 // Includes AI suggestion/generation button (calls /api/ai/suggest or /api/ai/generate)
 
-import type { RecipeFormValues } from "@/lib/validations";
+import type { ShareRecipeFormValues } from "@/lib/validations";
 
 interface RecipeFormProps {
   mode: "create" | "edit";
-  defaultValues?: Partial<RecipeFormValues>;
-  onSubmit: (data: RecipeFormValues) => Promise<void>;
+  defaultValues?: Partial<ShareRecipeFormValues>;
+  onSubmit: (data: ShareRecipeFormValues) => Promise<void>;
   isLoading?: boolean;
 }
 

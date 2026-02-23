@@ -6,9 +6,11 @@
 // - Protected route: only the recipe owner can access
 
 interface EditRecipePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function EditRecipePage({ params }: EditRecipePageProps) {
+export default async function EditRecipePage({ params }: EditRecipePageProps) {
+  const { id } = await params;
+  void id;
   return null;
 }

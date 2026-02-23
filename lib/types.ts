@@ -1,56 +1,80 @@
-// TODO: Define shared TypeScript types for the application
+// ---------------------------------------------------------------------------
+// Primitive / enum types
+// ---------------------------------------------------------------------------
 
-// TODO: Recipe status enum
-export type RecipeStatus = "draft" | "in-progress" | "completed" | "archived";
+export type RecipeStatus = "favorite" | "to_try" | "made_before";
 
-// TODO: Recipe model matching the Supabase recipes table
+export type SharePermission = "view" | "edit";
+
+// ---------------------------------------------------------------------------
+// Building-block types
+// ---------------------------------------------------------------------------
+
+export interface Ingredient {
+  name: string;
+  amount: string;
+  unit: string;
+}
+
+export interface InstructionStep {
+  step: number;
+  text: string;
+}
+
+// ---------------------------------------------------------------------------
+// Database row types
+// ---------------------------------------------------------------------------
+
+export interface Profile {
+  id: string;
+  username: string;
+  avatar_url: string | null;
+  created_at: string;
+}
+
 export interface Recipe {
   id: string;
   user_id: string;
   title: string;
   description: string | null;
   ingredients: Ingredient[];
-  steps: Step[];
-  tags: string[];
+  instructions: InstructionStep[];
+  cuisine_type: string | null;
+  prep_time_mins: number | null;
+  cook_time_mins: number | null;
+  servings: number | null;
+  image_url: string | null;
   status: RecipeStatus;
   is_public: boolean;
-  cover_image_url: string | null;
+  ai_generated: boolean;
+  tags: string[];
   created_at: string;
   updated_at: string;
+  /** Joined relation – present when queried with profiles table */
+  profiles?: Profile;
 }
 
-// TODO: Ingredient model
-export interface Ingredient {
-  name: string;
-  quantity: string;
-  unit: string;
-}
-
-// TODO: Step model
-export interface Step {
-  order: number;
-  instruction: string;
-  duration_minutes?: number;
-}
-
-// TODO: User profile model matching the Supabase profiles table
-export interface Profile {
+export interface SharedRecipe {
   id: string;
-  username: string | null;
-  avatar_url: string | null;
+  recipe_id: string;
+  shared_with: string;
+  permission: SharePermission;
   created_at: string;
 }
 
-// TODO: AI suggestion response type
-export interface AISuggestion {
-  suggestions: string[];
-}
+// ---------------------------------------------------------------------------
+// Input types (for create / update operations)
+// ---------------------------------------------------------------------------
 
-// TODO: AI generated recipe type
-export interface AIGeneratedRecipe {
-  title: string;
-  description: string;
-  ingredients: Ingredient[];
-  steps: Step[];
-  tags: string[];
+export type CreateRecipeInput = Omit<Recipe, "id" | "user_id" | "created_at" | "updated_at">;
+
+export type UpdateRecipeInput = Partial<CreateRecipeInput>;
+
+// ---------------------------------------------------------------------------
+// Generic API response wrapper
+// ---------------------------------------------------------------------------
+
+export interface ApiResponse<T> {
+  data: T | null;
+  error: string | null;
 }

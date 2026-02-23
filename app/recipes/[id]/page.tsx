@@ -6,9 +6,11 @@
 // - Include <StatusBadge> component
 
 interface RecipePageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function RecipePage({ params }: RecipePageProps) {
+export default async function RecipePage({ params }: RecipePageProps) {
+  const { id } = await params;
+  void id;
   return null;
 }
