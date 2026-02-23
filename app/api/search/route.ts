@@ -27,6 +27,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
   try {
     const { searchParams } = request.nextUrl;
     const q = searchParams.get("q")?.trim() ?? "";
+    const isPublicOnly = searchParams.get("is_public") === "true";
     const status = searchParams.get("status") ?? undefined;
     const cuisine = searchParams.get("cuisine") ?? undefined;
     const tagsParam = searchParams.get("tags");
@@ -40,6 +41,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       .select("*, profiles(id, username, avatar_url, created_at)")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
+
+    // When the discover page requests public-only, enforce it regardless of ownership
+    if (isPublicOnly) query = query.eq("is_public", true);
 
     // Full-text / partial search across multiple fields
     if (q) {
