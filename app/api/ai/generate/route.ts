@@ -1,13 +1,60 @@
-// TODO: Implement AI recipe generation route
-// POST - Accept a prompt/description and generate a full recipe using AI
-//        (title, description, ingredients, steps, tags)
-// Uses @google/generative-ai via lib/ai.ts and the Vercel AI SDK
+import { type NextRequest, NextResponse } from "next/server";
+import { gemini } from "@/lib/ai";
+import { createRecipeSchema } from "@/lib/validations";
+import type { ApiResponse, CreateRecipeInput } from "@/lib/types";
 
-import { type NextRequest } from "next/server";
+const SYSTEM_PROMPT =
+  "You are a professional chef. Generate a recipe as valid JSON matching this schema: { title, description, ingredients: [{name, amount, unit}], instructions: [{step, text}], cuisine_type, prep_time_mins, cook_time_mins, servings, tags: string[] }. Return ONLY valid JSON, no markdown.";
 
-export async function POST(request: NextRequest) {
-  // TODO: implement POST /api/ai/generate
-  // Parse request body (user prompt / recipe description)
-  // Call AI helper from lib/ai.ts to generate a full recipe
-  // Return generated recipe as JSON (or as a stream)
+export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<CreateRecipeInput>>> {
+  try {
+    const body = (await request.json()) as { prompt?: string };
+    const prompt = body.prompt?.trim();
+    if (!prompt) {
+      return NextResponse.json({ data: null, error: "Prompt is required" }, { status: 400 });
+    }
+
+    const result = await gemini.generateContent([
+      { text: SYSTEM_PROMPT },
+      { text: `Generate a recipe for: ${prompt}` },
+    ]);
+
+    const raw = result.response.text().trim();
+
+    // Strip any accidental markdown fences
+    const jsonText = raw.startsWith("```")
+      ? raw
+          .replace(/^```[^\n]*\n?/, "")
+          .replace(/```$/, "")
+          .trim()
+      : raw;
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch {
+      return NextResponse.json({ data: null, error: "AI returned invalid JSON. Please try again." }, { status: 502 });
+    }
+
+    const validated = createRecipeSchema.safeParse(parsed);
+    if (!validated.success) {
+      return NextResponse.json(
+        { data: null, error: "AI response did not match the expected recipe format. Please try again." },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json({ data: validated.data as unknown as CreateRecipeInput, error: null });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    // Surface rate-limit errors clearly
+    if (message.includes("429") || message.toLowerCase().includes("quota")) {
+      return NextResponse.json(
+        { data: null, error: "AI rate limit reached. Please wait a moment and try again." },
+        { status: 429 },
+      );
+    }
+    console.error("[POST /api/ai/generate]", err);
+    return NextResponse.json({ data: null, error: "Failed to generate recipe. Please try again." }, { status: 500 });
+  }
 }

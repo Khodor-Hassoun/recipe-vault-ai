@@ -4,11 +4,6 @@
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
--- Extensions
--- ---------------------------------------------------------------------------
-create extension if not exists "uuid-ossp";
-
--- ---------------------------------------------------------------------------
 -- Custom enum types
 -- ---------------------------------------------------------------------------
 create type public.recipe_status as enum ('favorite', 'to_try', 'made_before');
@@ -27,12 +22,10 @@ create table public.profiles (
 
 alter table public.profiles enable row level security;
 
--- Anyone can read any profile (needed for display names on public recipes)
 create policy "profiles_select_all"
   on public.profiles for select
   using (true);
 
--- Users can only update their own profile
 create policy "profiles_update_own"
   on public.profiles for update
   using (auth.uid() = id)
@@ -50,7 +43,6 @@ begin
   insert into public.profiles (id, username, avatar_url)
   values (
     new.id,
-    -- Use the part before @ in the email as a default username
     split_part(new.email, '@', 1),
     new.raw_user_meta_data ->> 'avatar_url'
   );
@@ -66,7 +58,7 @@ create trigger on_auth_user_created
 -- recipes
 -- ---------------------------------------------------------------------------
 create table public.recipes (
-  id              uuid            primary key default uuid_generate_v4(),
+  id              uuid            primary key default gen_random_uuid(),
   user_id         uuid            not null references auth.users (id) on delete cascade,
   title           text            not null,
   description     text            default null,
@@ -85,7 +77,6 @@ create table public.recipes (
   updated_at      timestamptz     not null default now()
 );
 
--- Keep updated_at current automatically
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql
@@ -100,63 +91,14 @@ create trigger recipes_set_updated_at
   before update on public.recipes
   for each row execute procedure public.set_updated_at();
 
-alter table public.recipes enable row level security;
-
--- SELECT: own recipes, public recipes, or recipes shared with this user
-create policy "recipes_select"
-  on public.recipes for select
-  using (
-    user_id = auth.uid()
-    or is_public = true
-    or exists (
-      select 1
-      from public.shared_recipes sr
-      where sr.recipe_id = id
-        and sr.shared_with = auth.uid()::text
-    )
-  );
-
--- INSERT: users may only create recipes owned by themselves
-create policy "recipes_insert_own"
-  on public.recipes for insert
-  with check (user_id = auth.uid());
-
--- UPDATE: own recipes, or recipes explicitly shared with 'edit' permission
-create policy "recipes_update"
-  on public.recipes for update
-  using (
-    user_id = auth.uid()
-    or exists (
-      select 1
-      from public.shared_recipes sr
-      where sr.recipe_id = id
-        and sr.shared_with = auth.uid()::text
-        and sr.permission = 'edit'
-    )
-  )
-  with check (
-    user_id = auth.uid()
-    or exists (
-      select 1
-      from public.shared_recipes sr
-      where sr.recipe_id = id
-        and sr.shared_with = auth.uid()::text
-        and sr.permission = 'edit'
-    )
-  );
-
--- DELETE: only the owner
-create policy "recipes_delete_own"
-  on public.recipes for delete
-  using (user_id = auth.uid());
-
 -- ---------------------------------------------------------------------------
 -- shared_recipes
+-- Must be created BEFORE recipes RLS policies that reference it.
 -- ---------------------------------------------------------------------------
 create table public.shared_recipes (
-  id           uuid             primary key default uuid_generate_v4(),
+  id           uuid             primary key default gen_random_uuid(),
   recipe_id    uuid             not null references public.recipes (id) on delete cascade,
-  shared_with  text             not null,   -- email address or user id
+  shared_with  text             not null,
   permission   share_permission not null default 'view',
   created_at   timestamptz      not null default now(),
   unique (recipe_id, shared_with)
@@ -164,27 +106,69 @@ create table public.shared_recipes (
 
 alter table public.shared_recipes enable row level security;
 
--- Only the recipe owner can manage shares
 create policy "shared_recipes_owner_all"
   on public.shared_recipes for all
   using (
     exists (
-      select 1
-      from public.recipes r
-      where r.id = recipe_id
-        and r.user_id = auth.uid()
+      select 1 from public.recipes r
+      where r.id = recipe_id and r.user_id = auth.uid()
     )
   )
   with check (
     exists (
-      select 1
-      from public.recipes r
-      where r.id = recipe_id
-        and r.user_id = auth.uid()
+      select 1 from public.recipes r
+      where r.id = recipe_id and r.user_id = auth.uid()
     )
   );
 
--- The person a recipe is shared with can read the row (so the app can resolve permissions)
 create policy "shared_recipes_select_recipient"
   on public.shared_recipes for select
   using (shared_with = auth.uid()::text);
+
+-- ---------------------------------------------------------------------------
+-- recipes RLS
+-- Defined after shared_recipes so the subqueries resolve correctly.
+-- ---------------------------------------------------------------------------
+alter table public.recipes enable row level security;
+
+create policy "recipes_select"
+  on public.recipes for select
+  using (
+    user_id = auth.uid()
+    or is_public = true
+    or exists (
+      select 1 from public.shared_recipes sr
+      where sr.recipe_id = id
+        and sr.shared_with = auth.uid()::text
+    )
+  );
+
+create policy "recipes_insert_own"
+  on public.recipes for insert
+  with check (user_id = auth.uid());
+
+create policy "recipes_update"
+  on public.recipes for update
+  using (
+    user_id = auth.uid()
+    or exists (
+      select 1 from public.shared_recipes sr
+      where sr.recipe_id = id
+        and sr.shared_with = auth.uid()::text
+        and sr.permission = 'edit'
+    )
+  )
+  with check (
+    user_id = auth.uid()
+    or exists (
+      select 1 from public.shared_recipes sr
+      where sr.recipe_id = id
+        and sr.shared_with = auth.uid()::text
+        and sr.permission = 'edit'
+    )
+  );
+
+create policy "recipes_delete_own"
+  on public.recipes for delete
+  using (user_id = auth.uid());
+

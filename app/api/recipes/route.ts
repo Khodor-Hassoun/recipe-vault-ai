@@ -51,6 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     return NextResponse.json({ data: data as Recipe[], error: null });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";
+    console.error("[GET /api/recipes]", err);
     return NextResponse.json({ data: null, error: message }, { status: 500 });
   }
 }
@@ -79,6 +80,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         { status: 400 },
       );
     }
+
+    // Ensure a profile row exists for this user. This is a no-op when the
+    // trigger has already created one, and self-heals accounts that were
+    // created before the trigger was in place.
+    await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        username: user.email?.split("@")[0] ?? user.id,
+        avatar_url: user.user_metadata?.avatar_url ?? null,
+      },
+      { onConflict: "id", ignoreDuplicates: true },
+    );
 
     const { data, error } = await supabase
       .from("recipes")
