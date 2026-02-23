@@ -39,7 +39,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     const validated = createRecipeSchema.safeParse(parsed);
     if (!validated.success) {
       console.error("[POST /api/ai/generate] Zod issues:", JSON.stringify(validated.error.issues, null, 2));
-      console.error("[POST /api/ai/generate] Raw AI output:", jsonText);
       return NextResponse.json(
         { data: null, error: "AI response did not match the expected recipe format. Please try again." },
         { status: 502 },
