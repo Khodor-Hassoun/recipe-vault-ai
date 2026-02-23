@@ -84,8 +84,8 @@ export const aiSuggestSchema = createRecipeSchema.partial();
 // Inferred types
 // ---------------------------------------------------------------------------
 
-export type CreateRecipeFormValues = z.infer<typeof createRecipeSchema>;
-export type UpdateRecipeFormValues = z.infer<typeof updateRecipeSchema>;
+export type CreateRecipeFormValues = z.input<typeof createRecipeSchema>;
+export type UpdateRecipeFormValues = z.input<typeof updateRecipeSchema>;
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type SignupFormValues = z.infer<typeof signupSchema>;
 export type ShareRecipeFormValues = z.infer<typeof shareRecipeSchema>;

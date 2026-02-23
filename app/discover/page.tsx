@@ -1,9 +1,98 @@
-// TODO: Implement discover page
-// - Fetch publicly shared recipes from Supabase
-// - Include <SearchBar> for filtering recipes
-// - Display results using <RecipeCard> components
-// - Support filtering by tags, cuisine, status, etc.
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { Compass } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { RecipeCard } from "@/components/recipe-card";
+import { SearchBar } from "@/components/search-bar";
+import type { Recipe, RecipeStatus, ApiResponse } from "@/lib/types";
 
 export default function DiscoverPage() {
-  return null;
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<RecipeStatus | "all">("all");
+  const [cuisineFilter, setCuisineFilter] = useState("");
+  const [tagFilter, setTagFilter] = useState("");
+
+  const fetchRecipes = useCallback(
+    async (q = "") => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams();
+        params.set("is_public", "true");
+        if (statusFilter !== "all") params.set("status", statusFilter);
+        if (cuisineFilter) params.set("cuisine", cuisineFilter);
+        if (tagFilter) params.set("tags", tagFilter);
+        if (q) params.set("q", q);
+        const res = await fetch(`/api/search?${params.toString()}`);
+        const json = (await res.json()) as ApiResponse<Recipe[]>;
+        setRecipes(json.data ?? []);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [statusFilter, cuisineFilter, tagFilter],
+  );
+
+  useEffect(() => {
+    void fetchRecipes();
+  }, [fetchRecipes]);
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Discover Recipes</h1>
+        <p className="text-muted-foreground">Browse public recipes shared by the community</p>
+      </div>
+
+      {/* Search + filters */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="flex-1 min-w-52">
+          <SearchBar onSearch={(q) => void fetchRecipes(q)} placeholder="Search all recipes..." />
+        </div>
+        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as RecipeStatus | "all")}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All statuses" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="favorite">Favorite</SelectItem>
+            <SelectItem value="to_try">To Try</SelectItem>
+            <SelectItem value="made_before">Made Before</SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          placeholder="Cuisine..."
+          className="w-36"
+          value={cuisineFilter}
+          onChange={(e) => setCuisineFilter(e.target.value)}
+        />
+        <Input placeholder="Tag..." className="w-36" value={tagFilter} onChange={(e) => setTagFilter(e.target.value)} />
+      </div>
+
+      {/* Grid */}
+      {loading ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-72 animate-pulse rounded-lg bg-slate-100" />
+          ))}
+        </div>
+      ) : recipes.length === 0 ? (
+        <div className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed py-20 text-center">
+          <Compass className="h-12 w-12 text-slate-300" />
+          <div>
+            <p className="font-semibold text-slate-600">No recipes found</p>
+            <p className="text-sm text-muted-foreground">Try adjusting your filters</p>
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {recipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
