@@ -28,7 +28,7 @@ Key features:
 
 ### Prerequisites
 
-- **Node.js** 18+
+- **Node.js** 22+
 - A **Supabase** project — free tier at [supabase.com](https://supabase.com)
 - A **Google AI API key** — free at [aistudio.google.com](https://aistudio.google.com)
 
@@ -56,15 +56,17 @@ Key features:
    GOOGLE_GENERATIVE_AI_API_KEY=<your-gemini-api-key>
    ```
 
-4. **Run the database migration**
+4. **Run the database migrations**
 
-   Open the [Supabase SQL Editor](https://app.supabase.com) for your project and run the contents of:
+   Open the [Supabase SQL Editor](https://app.supabase.com) for your project and run each migration **in order**:
 
-   ```
-   supabase/migrations/001_initial_schema.sql
-   ```
-
-   This creates the `profiles`, `recipes`, and `shared_recipes` tables along with RLS policies and triggers.
+   | File                          | Description                                                                                                              |
+   | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+   | `001_initial_schema.sql`      | Creates `profiles`, `recipes`, and `shared_recipes` tables with RLS policies, indexes, and the `handle_new_user` trigger |
+   | `002_recipes_profiles_fk.sql` | Re-points the `recipes.user_id` FK to `profiles` so PostgREST can resolve the embedded `profiles` relationship           |
+   | `003_fix_rls_recursion.sql`   | Rewrites RLS policies to eliminate infinite recursion between `recipes` and `shared_recipes`                             |
+   | `004_backfill_profiles.sql`   | Backfills a `profiles` row for any `auth.users` account created before the trigger existed                               |
+   | `005_storage_bucket.sql`      | Creates the `recipe-images` public Storage bucket (512 KB limit, JPEG/PNG/WebP) with per-user folder RLS                 |
 
 5. **Install dependencies**
 
@@ -154,7 +156,11 @@ lib/
   validations.ts     # Zod schemas
 middleware.ts        # Session refresh + route protection
 supabase/migrations/
-  001_initial_schema.sql
+  001_initial_schema.sql   # Core tables, RLS, triggers
+  002_recipes_profiles_fk.sql  # FK fix for PostgREST joins
+  003_fix_rls_recursion.sql    # RLS infinite recursion fix
+  004_backfill_profiles.sql    # Backfill missing profile rows
+  005_storage_bucket.sql       # recipe-images storage bucket
 ```
 
 ## Live URL
