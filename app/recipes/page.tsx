@@ -28,7 +28,6 @@ export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<RecipeStatus | "all">("all");
-  const [cuisineFilter, setCuisineFilter] = useState("");
   const [shareTarget, setShareTarget] = useState<Recipe | null>(null);
 
   // Suggest modal state
@@ -45,7 +44,6 @@ export default function RecipesPage() {
       try {
         const params = new URLSearchParams();
         if (statusFilter !== "all") params.set("status", statusFilter);
-        if (cuisineFilter) params.set("cuisine", cuisineFilter);
         if (q) params.set("q", q);
         const res = await fetch(`/api/recipes?${params.toString()}`);
         const json = (await res.json()) as ApiResponse<Recipe[]>;
@@ -54,7 +52,7 @@ export default function RecipesPage() {
         setLoading(false);
       }
     },
-    [statusFilter, cuisineFilter],
+    [statusFilter],
   );
 
   useEffect(() => {

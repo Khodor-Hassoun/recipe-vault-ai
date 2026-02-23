@@ -38,6 +38,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     const validated = createRecipeSchema.safeParse(parsed);
     if (!validated.success) {
+      console.error("[POST /api/ai/generate] Zod issues:", JSON.stringify(validated.error.issues, null, 2));
+      console.error("[POST /api/ai/generate] Raw AI output:", jsonText);
       return NextResponse.json(
         { data: null, error: "AI response did not match the expected recipe format. Please try again." },
         { status: 502 },
@@ -46,15 +48,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     return NextResponse.json({ data: validated.data as unknown as CreateRecipeInput, error: null });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    // Surface rate-limit errors clearly
-    if (message.includes("429") || message.toLowerCase().includes("quota")) {
-      return NextResponse.json(
-        { data: null, error: "AI rate limit reached. Please wait a moment and try again." },
-        { status: 429 },
-      );
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[POST /api/ai/generate]", message);
+    if (
+      message.includes("429") ||
+      message.toLowerCase().includes("quota") ||
+      message.toLowerCase().includes("resource_exhausted")
+    ) {
+      return NextResponse.json({ data: null, error: `Google AI error: ${message}` }, { status: 429 });
     }
-    console.error("[POST /api/ai/generate]", err);
-    return NextResponse.json({ data: null, error: "Failed to generate recipe. Please try again." }, { status: 500 });
+    return NextResponse.json({ data: null, error: `AI error: ${message}` }, { status: 500 });
   }
 }

@@ -1,17 +1,45 @@
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
+// Helper: accept a number or any string (including AI ranges like "4-6")
+// and extract the first integer. Returns null when nothing parseable is found.
+// ---------------------------------------------------------------------------
+function aiInt(positive = false) {
+  return z.preprocess(
+    (val) => {
+      if (val === null || val === undefined || val === "") return null;
+      if (typeof val === "number") return Number.isFinite(val) ? Math.round(val) : null;
+      if (typeof val === "string") {
+        const match = val.match(/\d+/);
+        return match ? parseInt(match[0], 10) : null;
+      }
+      return null;
+    },
+    positive
+      ? z.number().int().positive().nullable().default(null)
+      : z.number().int().nonnegative().nullable().default(null),
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Building-block schemas
 // ---------------------------------------------------------------------------
 
 export const ingredientSchema = z.object({
   name: z.string().min(1, "Ingredient name is required"),
-  amount: z.string().min(1, "Amount is required"),
+  amount: z.coerce.string().min(1, "Amount is required"),
   unit: z.string().min(1, "Unit is required"),
 });
 
 export const instructionStepSchema = z.object({
-  step: z.number().int().positive(),
+  step: z.preprocess((val) => {
+    if (typeof val === "number") return Math.round(val);
+    if (typeof val === "string") {
+      const m = val.match(/\d+/);
+      return m ? parseInt(m[0], 10) : val;
+    }
+    return val;
+  }, z.number().int().positive()),
   text: z.string().min(1, "Instruction text is required"),
 });
 
@@ -28,10 +56,13 @@ export const createRecipeSchema = z.object({
   ingredients: z.array(ingredientSchema).min(1, "At least one ingredient is required"),
   instructions: z.array(instructionStepSchema).min(1, "At least one instruction step is required"),
   cuisine_type: z.string().max(100).nullable().default(null),
-  prep_time_mins: z.number().int().nonnegative().nullable().default(null),
-  cook_time_mins: z.number().int().nonnegative().nullable().default(null),
-  servings: z.number().int().positive().nullable().default(null),
-  image_url: z.string().url("Must be a valid URL").nullable().default(null),
+  prep_time_mins: aiInt(),
+  cook_time_mins: aiInt(),
+  servings: aiInt(true),
+  image_url: z
+    .union([z.string().url(), z.literal(""), z.null()])
+    .transform((v) => v || null)
+    .default(null),
   status: recipeStatusSchema.default("to_try"),
   is_public: z.boolean().default(false),
   ai_generated: z.boolean().default(false),

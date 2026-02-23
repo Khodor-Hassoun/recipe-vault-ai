@@ -50,14 +50,15 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     return NextResponse.json({ data: suggestions, error: null });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    if (message.includes("429") || message.toLowerCase().includes("quota")) {
-      return NextResponse.json(
-        { data: null, error: "AI rate limit reached. Please wait a moment and try again." },
-        { status: 429 },
-      );
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[POST /api/ai/suggest]", message);
+    if (
+      message.includes("429") ||
+      message.toLowerCase().includes("quota") ||
+      message.toLowerCase().includes("resource_exhausted")
+    ) {
+      return NextResponse.json({ data: null, error: `Google AI error: ${message}` }, { status: 429 });
     }
-    console.error("[POST /api/ai/suggest]", err);
-    return NextResponse.json({ data: null, error: "Failed to get suggestions. Please try again." }, { status: 500 });
+    return NextResponse.json({ data: null, error: `AI error: ${message}` }, { status: 500 });
   }
 }
