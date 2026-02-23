@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -20,6 +20,14 @@ import type { Recipe, ApiResponse, CreateRecipeInput } from "@/lib/types";
 import type { CreateRecipeFormValues } from "@/lib/validations";
 
 export default function NewRecipePage() {
+  return (
+    <Suspense>
+      <NewRecipeContent />
+    </Suspense>
+  );
+}
+
+function NewRecipeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [aiOpen, setAiOpen] = useState(false);
