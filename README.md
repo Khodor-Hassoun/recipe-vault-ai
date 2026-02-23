@@ -165,4 +165,4 @@ supabase/migrations/
 
 ## Live URL
 
-[Add after deployment]
+[https://recipe-vault-ai-001.vercel.app](https://recipe-vault-ai-001.vercel.app)
