@@ -100,15 +100,6 @@ export default function NewRecipePage() {
           </Button>
           <h1 className="text-2xl font-bold">New Recipe</h1>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setAiError(null);
-            setAiOpen(true);
-          }}
-        >
-          <Sparkles className="mr-2 h-4 w-4 text-violet-500" />✨ Generate with AI
-        </Button>
       </div>
 
       <RecipeForm mode="create" defaultValues={prefill ?? undefined} onSuccess={handleSuccess} />
