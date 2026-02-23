@@ -39,6 +39,7 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
     formState: { errors, isSubmitting },
   } = useForm<CreateRecipeFormValues>({
     resolver: zodResolver(createRecipeSchema),
+    mode: "onTouched",
     defaultValues: {
       title: "",
       description: null,
@@ -199,8 +200,13 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Basic Info</h2>
         <div className="space-y-2">
-          <Label htmlFor="title">Title *</Label>
-          <Input id="title" placeholder="e.g. Spaghetti Carbonara" {...register("title")} />
+          <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+          <Input
+            id="title"
+            placeholder="e.g. Spaghetti Carbonara"
+            className={errors.title ? "border-destructive focus-visible:ring-destructive" : ""}
+            {...register("title")}
+          />
           {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
         </div>
 
@@ -325,7 +331,9 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
       {/* Ingredients */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Ingredients</h2>
+          <h2 className="text-lg font-semibold">
+            Ingredients <span className="text-destructive">*</span>
+          </h2>
           <Button
             type="button"
             size="sm"
@@ -342,9 +350,21 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
           {ingredientFields.map((field, index) => (
             <div key={field.id} className="flex items-start gap-2">
               <div className="grid flex-1 grid-cols-3 gap-2">
-                <Input placeholder="Ingredient" {...register(`ingredients.${index}.name`)} />
-                <Input placeholder="Amount" {...register(`ingredients.${index}.amount`)} />
-                <Input placeholder="Unit" {...register(`ingredients.${index}.unit`)} />
+                <Input
+                  placeholder="Ingredient *"
+                  className={errors.ingredients?.[index]?.name ? "border-destructive focus-visible:ring-destructive" : ""}
+                  {...register(`ingredients.${index}.name`)}
+                />
+                <Input
+                  placeholder="Amount *"
+                  className={errors.ingredients?.[index]?.amount ? "border-destructive focus-visible:ring-destructive" : ""}
+                  {...register(`ingredients.${index}.amount`)}
+                />
+                <Input
+                  placeholder="Unit *"
+                  className={errors.ingredients?.[index]?.unit ? "border-destructive focus-visible:ring-destructive" : ""}
+                  {...register(`ingredients.${index}.unit`)}
+                />
               </div>
               <Button
                 type="button"
@@ -364,7 +384,9 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
       {/* Instructions */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Instructions</h2>
+          <h2 className="text-lg font-semibold">
+            Instructions <span className="text-destructive">*</span>
+          </h2>
           <Button
             type="button"
             size="sm"
@@ -385,7 +407,7 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
               <Textarea
                 placeholder={`Step ${index + 1} instructions...`}
                 rows={2}
-                className="flex-1 resize-none"
+                className={`flex-1 resize-none${errors.instructions?.[index]?.text ? " border-destructive focus-visible:ring-destructive" : ""}`}
                 {...register(`instructions.${index}.text`)}
               />
               <Button
