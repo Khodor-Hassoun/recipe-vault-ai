@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Trash2, GripVertical, Loader2, Sparkles } from "lucide-react";
+import { Plus, Trash2, GripVertical, Loader2, Sparkles, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { createRecipeSchema, type CreateRecipeFormValues } from "@/lib/validations";
 import type { Recipe, ApiResponse } from "@/lib/types";
+import { createClient } from "@/lib/supabase/client";
+import { compressImage } from "@/lib/utils/compress-image";
 
 interface RecipeFormProps {
   mode: "create" | "edit";
@@ -25,6 +27,7 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
   const [serverError, setServerError] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
 
   const {
     register,
@@ -129,6 +132,34 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageUploading(true);
+    setServerError(null);
+    try {
+      const compressed = await compressImage(file);
+      const ext = compressed.type === "image/jpeg" ? "jpg" : "webp";
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("recipe-images")
+        .upload(path, compressed, { contentType: compressed.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("recipe-images").getPublicUrl(path);
+      setValue("image_url", data.publicUrl);
+    } catch {
+      setServerError("Image upload failed — please try pasting a URL instead.");
+    } finally {
+      setImageUploading(false);
+      e.target.value = "";
+    }
+  };
+
   const onSubmit = async (data: CreateRecipeFormValues) => {
     setServerError(null);
     try {
@@ -221,8 +252,49 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="image_url">Image URL</Label>
-          <Input id="image_url" type="url" placeholder="https://..." {...register("image_url")} />
+          <Label>Image</Label>
+          <div className="flex flex-col gap-2">
+            {/* File upload */}
+            <label
+              htmlFor="image_file"
+              className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              {imageUploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" /> Upload image (auto-compressed)
+                </>
+              )}
+              <input
+                id="image_file"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                disabled={imageUploading}
+                onChange={handleImageUpload}
+              />
+            </label>
+            {/* Preview */}
+            {watch("image_url") && (
+              <div className="relative w-full overflow-hidden rounded-md border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={watch("image_url") ?? ""} alt="Recipe preview" className="max-h-40 w-full object-cover" />
+                <button
+                  type="button"
+                  className="absolute right-1 top-1 rounded-full bg-background/80 p-0.5 text-xs text-destructive hover:bg-destructive hover:text-white"
+                  onClick={() => setValue("image_url", null)}
+                  aria-label="Remove image"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+            {/* URL fallback */}
+            <Input id="image_url" type="url" placeholder="or paste image URL…" {...register("image_url")} />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
