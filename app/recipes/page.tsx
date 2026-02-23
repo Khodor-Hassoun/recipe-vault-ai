@@ -19,9 +19,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RecipeCard } from "@/components/recipe-card";
 import { SearchBar } from "@/components/search-bar";
 import { ShareDialog } from "@/components/share-dialog";
+import { Pagination } from "@/components/ui/pagination";
 import type { Recipe, RecipeStatus, ApiResponse } from "@/lib/types";
 
 type SuggestionItem = { title: string; description: string; cuisine_type: string };
+
+const PAGE_SIZE = 6;
 
 export default function RecipesPage() {
   const router = useRouter();
@@ -29,6 +32,7 @@ export default function RecipesPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<RecipeStatus | "all">("all");
   const [shareTarget, setShareTarget] = useState<Recipe | null>(null);
+  const [page, setPage] = useState(1);
 
   // Suggest modal state
   const [suggestOpen, setSuggestOpen] = useState(false);
@@ -48,6 +52,7 @@ export default function RecipesPage() {
         const res = await fetch(`/api/recipes?${params.toString()}`);
         const json = (await res.json()) as ApiResponse<Recipe[]>;
         setRecipes(json.data ?? []);
+        setPage(1);
       } finally {
         setLoading(false);
       }
@@ -62,6 +67,9 @@ export default function RecipesPage() {
   const handleDelete = (id: string) => {
     setRecipes((prev) => prev.filter((r) => r.id !== id));
   };
+
+  const totalPages = Math.ceil(recipes.length / PAGE_SIZE);
+  const pagedRecipes = recipes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   // Ingredient chips helpers
   const addChip = () => {
@@ -171,11 +179,27 @@ export default function RecipesPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} showActions onDelete={handleDelete} onShare={setShareTarget} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {pagedRecipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                showActions
+                onDelete={handleDelete}
+                onShare={setShareTarget}
+              />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="space-y-1 pt-2">
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              <p className="text-center text-xs text-muted-foreground">
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, recipes.length)} of {recipes.length} recipes
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {shareTarget && (

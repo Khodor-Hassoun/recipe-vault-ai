@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { RecipeCard } from "@/components/recipe-card";
 import { SearchBar } from "@/components/search-bar";
+import { Pagination } from "@/components/ui/pagination";
 import type { Recipe, RecipeStatus, ApiResponse } from "@/lib/types";
 
 export default function DiscoverPage() {
@@ -14,6 +15,9 @@ export default function DiscoverPage() {
   const [statusFilter, setStatusFilter] = useState<RecipeStatus | "all">("all");
   const [cuisineFilter, setCuisineFilter] = useState("");
   const [tagFilter, setTagFilter] = useState("");
+  const [page, setPage] = useState(1);
+
+  const PAGE_SIZE = 6;
 
   const fetchRecipes = useCallback(
     async (q = "") => {
@@ -28,6 +32,7 @@ export default function DiscoverPage() {
         const res = await fetch(`/api/search?${params.toString()}`);
         const json = (await res.json()) as ApiResponse<Recipe[]>;
         setRecipes(json.data ?? []);
+        setPage(1);
       } finally {
         setLoading(false);
       }
@@ -38,6 +43,9 @@ export default function DiscoverPage() {
   useEffect(() => {
     void fetchRecipes();
   }, [fetchRecipes]);
+
+  const totalPages = Math.ceil(recipes.length / PAGE_SIZE);
+  const pagedRecipes = recipes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -87,11 +95,21 @@ export default function DiscoverPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {pagedRecipes.map((recipe) => (
+              <RecipeCard key={recipe.id} recipe={recipe} />
+            ))}
+          </div>
+          {totalPages > 1 && (
+            <div className="space-y-1 pt-2">
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+              <p className="text-center text-xs text-muted-foreground">
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, recipes.length)} of {recipes.length} recipes
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
