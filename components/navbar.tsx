@@ -32,7 +32,7 @@ export function Navbar() {
   const initials = user?.email ? user.email.slice(0, 2).toUpperCase() : "RV";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Brand */}
         <Link href={user ? "/recipes" : "/"} className="flex items-center gap-2 font-bold text-lg tracking-tight">

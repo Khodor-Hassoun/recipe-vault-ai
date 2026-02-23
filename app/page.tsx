@@ -42,7 +42,7 @@ export default function HomePage() {
 
         <h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl">
           Your recipes,{" "}
-          <span className="bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-primary to-blue-500 bg-clip-text text-transparent">
             organised beautifully
           </span>
         </h1>
