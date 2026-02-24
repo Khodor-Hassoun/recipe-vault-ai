@@ -93,15 +93,6 @@ export const signupSchema = z
   });
 
 // ---------------------------------------------------------------------------
-// Share schema
-// ---------------------------------------------------------------------------
-
-export const shareRecipeSchema = z.object({
-  shared_with: z.string().email("Must be a valid email"),
-  permission: z.enum(["view", "edit"]).default("view"),
-});
-
-// ---------------------------------------------------------------------------
 // AI schemas
 // ---------------------------------------------------------------------------
 
@@ -119,5 +110,4 @@ export type CreateRecipeFormValues = z.input<typeof createRecipeSchema>;
 export type UpdateRecipeFormValues = z.input<typeof updateRecipeSchema>;
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type SignupFormValues = z.infer<typeof signupSchema>;
-export type ShareRecipeFormValues = z.infer<typeof shareRecipeSchema>;
 export type AiGenerateFormValues = z.infer<typeof aiGenerateSchema>;

@@ -4,7 +4,7 @@ import type { ApiResponse, Recipe } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // GET /api/search
-// Searches recipes the current user can access (own + public + shared).
+// Searches recipes the current user can access (own + public).
 // Query params:
 //   ?q=       Full-text search on title, description, cuisine_type, tags
 //   ?status=  Filter by recipe status
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
     const offset = (page - 1) * limit;
 
-    // Base query: RLS enforces access (own OR public OR shared_recipes row exists)
+    // Base query: RLS enforces access (own OR public row exists)
     let query = supabase
       .from("recipes")
       .select("*, profiles(id, username, avatar_url, created_at)")

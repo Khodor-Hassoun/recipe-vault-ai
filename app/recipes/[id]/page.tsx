@@ -4,12 +4,11 @@ import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Clock, Users, Pencil, Trash2, Share2, ChefHat, Loader2 } from "lucide-react";
+import { ArrowLeft, Clock, Users, Pencil, Trash2, ChefHat, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/status-badge";
-import { ShareDialog } from "@/components/share-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import type { Recipe, ApiResponse } from "@/lib/types";
 
@@ -23,7 +22,6 @@ export default function RecipePage({ params }: RecipePageProps) {
   const router = useRouter();
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState(true);
-  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     fetch(`/api/recipes/${id}`)
@@ -81,10 +79,6 @@ export default function RecipePage({ params }: RecipePageProps) {
                 <Pencil className="mr-2 h-4 w-4" />
                 Edit
               </Link>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setShareOpen(true)}>
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
             </Button>
             <Button
               variant="outline"
@@ -197,8 +191,6 @@ export default function RecipePage({ params }: RecipePageProps) {
           </ol>
         )}
       </section>
-
-      <ShareDialog recipeId={id} open={shareOpen} onOpenChange={setShareOpen} />
     </div>
   );
 }

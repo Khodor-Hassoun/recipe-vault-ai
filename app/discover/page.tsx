@@ -16,7 +16,7 @@ export default function DiscoverPage() {
   const [tagFilter, setTagFilter] = useState("");
   const [page, setPage] = useState(1);
 
-  const PAGE_SIZE = 6;
+  const PAGE_SIZE = 3;
 
   const fetchRecipes = useCallback(
     async (q = "") => {

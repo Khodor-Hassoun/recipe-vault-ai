@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, ChefHat, Trash2, Pencil, Share2, Users } from "lucide-react";
+import { Clock, ChefHat, Trash2, Pencil, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/status-badge";
@@ -13,10 +13,9 @@ interface RecipeCardProps {
   recipe: Recipe;
   showActions?: boolean;
   onDelete?: (id: string) => void;
-  onShare?: (recipe: Recipe) => void;
 }
 
-export function RecipeCard({ recipe, showActions, onDelete, onShare }: RecipeCardProps) {
+export function RecipeCard({ recipe, showActions, onDelete }: RecipeCardProps) {
   const router = useRouter();
   const totalTime = (recipe.prep_time_mins ?? 0) + (recipe.cook_time_mins ?? 0);
 
@@ -25,11 +24,6 @@ export function RecipeCard({ recipe, showActions, onDelete, onShare }: RecipeCar
     if (!confirm(`Delete "${recipe.title}"?`)) return;
     await fetch(`/api/recipes/${recipe.id}`, { method: "DELETE" });
     onDelete?.(recipe.id);
-  };
-
-  const handleShare = (e: React.MouseEvent) => {
-    e.preventDefault();
-    onShare?.(recipe);
   };
 
   return (
@@ -55,11 +49,18 @@ export function RecipeCard({ recipe, showActions, onDelete, onShare }: RecipeCar
         <div className="absolute left-2.5 top-2.5">
           <StatusBadge status={recipe.status} />
         </div>
-        {recipe.ai_generated && (
-          <div className="absolute right-2.5 top-2.5">
-            <span className="inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
-              ✨ AI
-            </span>
+        {(recipe.ai_generated || !recipe.is_public) && (
+          <div className="absolute right-2.5 top-2.5 flex flex-col items-end gap-1">
+            {recipe.ai_generated && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                ✨ AI
+              </span>
+            )}
+            {!recipe.is_public && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                🔒 Private
+              </span>
+            )}
           </div>
         )}
       </Link>
@@ -129,9 +130,6 @@ export function RecipeCard({ recipe, showActions, onDelete, onShare }: RecipeCar
               onClick={() => router.push(`/recipes/${recipe.id}/edit`)}
             >
               <Pencil className="mr-1 h-3 w-3" /> Edit
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1 text-xs" onClick={handleShare}>
-              <Share2 className="mr-1 h-3 w-3" /> Share
             </Button>
             <Button
               variant="outline"

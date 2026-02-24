@@ -18,7 +18,6 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RecipeCard } from "@/components/recipe-card";
 import { SearchBar } from "@/components/search-bar";
-import { ShareDialog } from "@/components/share-dialog";
 import { Pagination } from "@/components/ui/pagination";
 import type { Recipe, RecipeStatus, ApiResponse } from "@/lib/types";
 
@@ -31,7 +30,6 @@ export default function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<RecipeStatus | "all">("all");
-  const [shareTarget, setShareTarget] = useState<Recipe | null>(null);
   const [page, setPage] = useState(1);
 
   // Suggest modal state
@@ -119,7 +117,7 @@ export default function RecipesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">My Recipes</h1>
           <p className="text-sm text-muted-foreground">Your personal cookbook</p>
@@ -127,7 +125,7 @@ export default function RecipesPage() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="rounded-full"
+            className="flex-1 rounded-full sm:flex-none"
             onClick={() => {
               resetSuggestModal();
               setSuggestOpen(true);
@@ -136,7 +134,7 @@ export default function RecipesPage() {
             <Brain className="mr-2 h-4 w-4 text-violet-500" />
             What can I make?
           </Button>
-          <Button className="rounded-full" asChild>
+          <Button className="flex-1 rounded-full sm:flex-none" asChild>
             <Link href="/recipes/new">
               <Plus className="mr-2 h-4 w-4" /> Add Recipe
             </Link>
@@ -186,13 +184,7 @@ export default function RecipesPage() {
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {pagedRecipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                showActions
-                onDelete={handleDelete}
-                onShare={setShareTarget}
-              />
+              <RecipeCard key={recipe.id} recipe={recipe} showActions onDelete={handleDelete} />
             ))}
           </div>
           {totalPages > 1 && (
@@ -204,16 +196,6 @@ export default function RecipesPage() {
             </div>
           )}
         </>
-      )}
-
-      {shareTarget && (
-        <ShareDialog
-          recipeId={shareTarget.id}
-          open={!!shareTarget}
-          onOpenChange={(open) => {
-            if (!open) setShareTarget(null);
-          }}
-        />
       )}
 
       {/* "What can I make?" Modal */}

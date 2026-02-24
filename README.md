@@ -143,7 +143,6 @@ components/
   recipe-card.tsx
   recipe-form.tsx
   search-bar.tsx
-  share-dialog.tsx
   status-badge.tsx
 hooks/
   use-auth.ts

@@ -4,8 +4,6 @@
 
 export type RecipeStatus = "favorite" | "to_try" | "made_before";
 
-export type SharePermission = "view" | "edit";
-
 // ---------------------------------------------------------------------------
 // Building-block types
 // ---------------------------------------------------------------------------
@@ -52,14 +50,6 @@ export interface Recipe {
   updated_at: string;
   /** Joined relation – present when queried with profiles table */
   profiles?: Profile;
-}
-
-export interface SharedRecipe {
-  id: string;
-  recipe_id: string;
-  shared_with: string;
-  permission: SharePermission;
-  created_at: string;
 }
 
 // ---------------------------------------------------------------------------

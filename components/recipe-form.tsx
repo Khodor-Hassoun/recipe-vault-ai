@@ -25,6 +25,7 @@ interface RecipeFormProps {
 
 export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeFormProps) {
   const [serverError, setServerError] = useState<string | null>(null);
+  const [aiHint, setAiHint] = useState<string | null>(null);
   const [tagInput, setTagInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -98,12 +99,14 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
 
   const handleGenerateWithAI = async () => {
     const title = getValues("title");
-    const description = getValues("description");
-    const prompt = [title, description].filter(Boolean).join(" — ");
-    if (!prompt.trim()) {
-      setServerError("Please enter a title or description before generating with AI.");
+    if (!title?.trim()) {
+      setAiHint("Please enter a recipe name first.");
+      document.getElementById("title")?.focus();
       return;
     }
+    setAiHint(null);
+    const description = getValues("description");
+    const prompt = [title, description].filter(Boolean).join(" — ");
     setAiLoading(true);
     setServerError(null);
     try {
@@ -185,7 +188,7 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
       {/* AI Generate */}
-      <div className="flex justify-end">
+      <div className="flex flex-col items-end gap-1">
         <Button type="button" variant="outline" size="sm" onClick={handleGenerateWithAI} disabled={aiLoading}>
           {aiLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -194,18 +197,25 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
           )}
           Generate with AI
         </Button>
+        {aiHint && <p className="text-xs text-destructive">{aiHint}</p>}
       </div>
 
       {/* Basic info */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold">Basic Info</h2>
         <div className="space-y-2">
-          <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+          <Label htmlFor="title">
+            Title <span className="text-destructive">*</span>
+          </Label>
           <Input
             id="title"
             placeholder="e.g. Spaghetti Carbonara"
             className={errors.title ? "border-destructive focus-visible:ring-destructive" : ""}
-            {...register("title")}
+            {...register("title", {
+              onChange: () => {
+                if (aiHint) setAiHint(null);
+              },
+            })}
           />
           {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
         </div>
@@ -352,17 +362,23 @@ export function RecipeForm({ mode, defaultValues, recipeId, onSuccess }: RecipeF
               <div className="grid flex-1 grid-cols-3 gap-2">
                 <Input
                   placeholder="Ingredient *"
-                  className={errors.ingredients?.[index]?.name ? "border-destructive focus-visible:ring-destructive" : ""}
+                  className={
+                    errors.ingredients?.[index]?.name ? "border-destructive focus-visible:ring-destructive" : ""
+                  }
                   {...register(`ingredients.${index}.name`)}
                 />
                 <Input
                   placeholder="Amount *"
-                  className={errors.ingredients?.[index]?.amount ? "border-destructive focus-visible:ring-destructive" : ""}
+                  className={
+                    errors.ingredients?.[index]?.amount ? "border-destructive focus-visible:ring-destructive" : ""
+                  }
                   {...register(`ingredients.${index}.amount`)}
                 />
                 <Input
                   placeholder="Unit *"
-                  className={errors.ingredients?.[index]?.unit ? "border-destructive focus-visible:ring-destructive" : ""}
+                  className={
+                    errors.ingredients?.[index]?.unit ? "border-destructive focus-visible:ring-destructive" : ""
+                  }
                   {...register(`ingredients.${index}.unit`)}
                 />
               </div>

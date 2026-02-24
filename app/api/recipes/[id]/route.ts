@@ -9,7 +9,7 @@ interface RouteContext {
 
 // ---------------------------------------------------------------------------
 // GET /api/recipes/[id]
-// Accessible if: owner, public recipe, or shared with the user.
+// Accessible if: owner or public recipe.
 // ---------------------------------------------------------------------------
 export async function GET(_request: NextRequest, { params }: RouteContext): Promise<NextResponse<ApiResponse<Recipe>>> {
   const { id } = await params;
@@ -43,7 +43,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext): Prom
 
 // ---------------------------------------------------------------------------
 // PATCH /api/recipes/[id]
-// Allowed for: owner, or user with 'edit' share permission.
+// Owner only.
 // ---------------------------------------------------------------------------
 export async function PATCH(
   request: NextRequest,
@@ -61,7 +61,7 @@ export async function PATCH(
   }
 
   try {
-    // Resolve permission: owner or edit-share?
+    // Resolve permission: owner?
     const { data: existing } = await supabase.from("recipes").select("id, user_id").eq("id", id).single();
 
     if (!existing) {
@@ -70,16 +70,7 @@ export async function PATCH(
 
     const isOwner = existing.user_id === user.id;
     if (!isOwner) {
-      const { data: share } = await supabase
-        .from("shared_recipes")
-        .select("permission")
-        .eq("recipe_id", id)
-        .eq("shared_with", user.id)
-        .single();
-
-      if (!share || share.permission !== "edit") {
-        return NextResponse.json({ data: null, error: "Forbidden" }, { status: 403 });
-      }
+      return NextResponse.json({ data: null, error: "Forbidden" }, { status: 403 });
     }
 
     const body: unknown = await request.json();
