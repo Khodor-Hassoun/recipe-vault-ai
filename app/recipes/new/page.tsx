@@ -34,15 +34,18 @@ function NewRecipeContent() {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const fromSuggest = searchParams.get("from") === "suggest";
   const [prefill, setPrefill] = useState<Partial<CreateRecipeFormValues> | null>(() => {
     const title = searchParams.get("title");
-    return title ? { title } : null;
+    const description = searchParams.get("description");
+    return title ? { title, ...(description ? { description } : {}) } : null;
   });
 
   // Update prefill if query param changes (e.g. navigation)
   useEffect(() => {
     const title = searchParams.get("title");
-    if (title && !prefill) setPrefill({ title });
+    const description = searchParams.get("description");
+    if (title && !prefill) setPrefill({ title, ...(description ? { description } : {}) });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -109,6 +112,17 @@ function NewRecipeContent() {
           <h1 className="text-2xl font-bold">New Recipe</h1>
         </div>
       </div>
+
+      {fromSuggest && (
+        <div className="flex items-start gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-800">
+          <span className="text-lg leading-none">✨</span>
+          <p>
+            <span className="font-semibold">Tip:</span> Your recipe name and description have been pre-filled from the
+            suggestion. Click <span className="font-semibold">Generate with AI</span> at the top of the form to
+            automatically fill in ingredients, instructions, and more.
+          </p>
+        </div>
+      )}
 
       <RecipeForm mode="create" defaultValues={prefill ?? undefined} onSuccess={handleSuccess} />
 

@@ -16,7 +16,7 @@ Key features:
 
 | Layer           | Technology                                                                         |
 | --------------- | ---------------------------------------------------------------------------------- |
-| Framework       | [Next.js 15](https://nextjs.org) (App Router)                                      |
+| Framework       | [Next.js 16](https://nextjs.org) (App Router)                                      |
 | Language        | TypeScript (strict mode)                                                           |
 | Styling         | Tailwind CSS + [shadcn/ui](https://ui.shadcn.com) (New York / Slate)               |
 | Database & Auth | [Supabase](https://supabase.com) (Postgres + Row-Level Security + OAuth)           |

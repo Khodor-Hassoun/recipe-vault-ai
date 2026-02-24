@@ -102,9 +102,11 @@ export default function RecipesPage() {
     }
   };
 
-  const handleUsesuggestion = (title: string) => {
+  const handleUsesuggestion = (title: string, description: string) => {
     setSuggestOpen(false);
-    router.push(`/recipes/new?title=${encodeURIComponent(title)}`);
+    const params = new URLSearchParams({ title, from: "suggest" });
+    if (description) params.set("description", description);
+    router.push(`/recipes/new?${params.toString()}`);
   };
 
   const resetSuggestModal = () => {
@@ -269,7 +271,7 @@ export default function RecipesPage() {
                         size="sm"
                         variant="outline"
                         className="shrink-0"
-                        onClick={() => handleUsesuggestion(s.title)}
+                        onClick={() => handleUsesuggestion(s.title, s.description)}
                       >
                         Create
                       </Button>
