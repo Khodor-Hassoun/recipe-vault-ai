@@ -2,7 +2,6 @@
 
 > A full-stack personal recipe manager with AI-powered generation and ingredient-based suggestions.
 
-**Live demo → [recipe-vault-ai-001.vercel.app](https://recipe-vault-ai-001.vercel.app)**
 
 ---
 
